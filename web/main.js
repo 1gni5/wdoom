@@ -95,7 +95,9 @@ async function loadModule(useMock) {
   if (typeof createDoom !== "function") {
     throw new Error("dist/doom.js does not export createDoom");
   }
-  return createDoom();
+  return createDoom({
+    locateFile: (p) => new URL("./dist/" + p, import.meta.url).href,
+  });
 }
 
 function bindWasm(Module) {
