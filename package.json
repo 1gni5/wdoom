@@ -1,0 +1,11 @@
+{
+  "name": "web-doom",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "git submodule update --init && scripts/fetch-wad.sh",
+    "build": "port/build.sh",
+    "test": "node port/smoke.mjs",
+    "start": "node scripts/serve.mjs"
+  }
+}
