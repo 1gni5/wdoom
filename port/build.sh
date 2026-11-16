@@ -55,7 +55,7 @@ fi
 # 5. compile + link
 mkdir -p "$OUT_DIR"
 SOURCES=$(ls "$SRC"/*.c)
-EXPORTS='["_doom_init","_doom_tick","_doom_key","_doom_mouse","_doom_framebuffer","_doom_palette"]'
+EXPORTS='["_doom_init","_doom_tick","_doom_key","_doom_mouse","_doom_framebuffer","_doom_palette","_doom_net_config","_doom_net_push","_doom_net_buffer","_doom_net_checksum","_doom_net_gametic"]'
 RUNTIME='["ccall","cwrap","HEAPU8"]'
 
 emcc $OPT $SOURCES \

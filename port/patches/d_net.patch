@@ -1,0 +1,30 @@
+--- a/d_net.c	2026-11-16 12:07:39
++++ b/d_net.c	2026-11-16 12:07:39
+@@ -571,8 +571,11 @@
+     
+     netbuffer = &doomcom->data;
+     consoleplayer = displayplayer = doomcom->consoleplayer;
++#ifndef DOOM_WEB
++    // Web build: the lobby already agreed on the game parameters.
+     if (netgame)
+ 	D_ArbitrateNetStart ();
++#endif
+ 
+     printf ("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
+ 	    startskill, deathmatch, startmap, startepisode);
+@@ -724,6 +727,15 @@
+ 	if (lowtic < gametic/ticdup)
+ 	    I_Error ("TryRunTics: lowtic < gametic");
+ 				
++#ifdef DOOM_WEB
++	// Web build: never spin waiting for remote packets; the browser
++	// delivers them between frames. Retry on the next doom_tick().
++	if (lowtic < gametic/ticdup + counts)
++	{
++	    M_Ticker ();
++	    return;
++	}
++#endif
+ 	// don't stay in here forever -- give the menu a chance to work
+ 	if (I_GetTime ()/ticdup - entertic >= 20)
+ 	{
