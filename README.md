@@ -11,6 +11,7 @@ id Software's original Doom source (linuxdoom-1.10) compiled to WebAssembly with
 | `port/build.sh` | Copies sources to `build/`, applies overrides + patches, runs `emcc` -> `web/dist/` |
 | `port/smoke.mjs` | Node smoke test (100 frames, checks framebuffer) |
 | `scripts/fetch-wad.sh` | Downloads the shareware `doom1.wad` into `build/` |
+| `scripts/extract-assets.mjs` | Extracts Doom's own logo (`M_DOOM`) and menu font (`STCFN*`) from the WAD into `web/dist/ui/` for the lobby UI (not committed; UI falls back to CSS text if absent) |
 | `scripts/serve.mjs` | Zero-dependency static server for `web/` |
 | `web/` | Front-end: canvas renderer, keyboard + pointer-lock mouse |
 | `CONTRACT.md` | JS <-> C interface (exported functions) |

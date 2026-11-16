@@ -233,3 +233,13 @@ button.item:disabled::before { display: none; }
   transition: opacity .5s;
 }
 body.playing .hint { opacity: 0; }
+
+.doom-logo {
+  display: block;
+  margin: 0 auto .4rem;
+  width: 246px; /* 2x the original 123x60 lump */
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 12px rgba(255, 60, 0, .5));
+}
+.logo.doomfont, .panel h2.doomfont { display: flex; justify-content: center; background: none; -webkit-background-clip: initial; background-clip: initial; filter: none; border: 0; }
+.panel h2.doomfont { border-bottom: 2px solid var(--blood); padding-bottom: .4rem; justify-content: flex-start; }

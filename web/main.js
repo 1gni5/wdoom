@@ -2,6 +2,7 @@
 // Load order: ?mock=1 uses ./mock-doom.js, otherwise ./dist/doom.js.
 
 import { NetClient } from "./net.js";
+import { applyDoomFont } from "./doomfont.js";
 
 const WIDTH = 320;
 const HEIGHT = 200;
@@ -313,4 +314,5 @@ async function main() {
   startLoop(Module);
 }
 
+applyDoomFont();
 main();

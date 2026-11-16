@@ -18,12 +18,13 @@
 
   <div id="lobby" class="overlay" hidden>
     <div class="panel doom">
-      <h1 class="logo">Multiplayer</h1>
+      <img class="doom-logo" src="dist/ui/logo.png" alt="DOOM" onerror="this.remove()">
+      <h1 class="logo" data-doomfont data-text="Multiplayer" data-scale="3" data-tint="#d41000">Multiplayer</h1>
       <p class="room">Room: <span id="lobby-room"></span></p>
       <div id="lobby-form">
         <label class="row">Name <input id="lobby-name" maxlength="16" autocomplete="off" spellcheck="false"></label>
         <button id="lobby-join" class="item">Join room</button>
-        <h2>Host a game</h2>
+        <h2 data-doomfont data-text="Host a game" data-scale="2" data-tint="#fcb000">Host a game</h2>
         <label class="row">Players <select id="lobby-max"><option>2</option><option>3</option><option selected>4</option></select></label>
         <label class="row">Skill
           <select id="lobby-skill">
