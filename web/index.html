@@ -17,30 +17,36 @@
   </div>
 
   <div id="lobby" class="overlay" hidden>
-    <div class="panel">
-      <h1>Multiplayer: <span id="lobby-room"></span></h1>
+    <div class="panel doom">
+      <img class="doom-logo" src="dist/ui/logo.png" alt="DOOM" onerror="this.remove()">
+      <h1 class="logo" data-doomfont data-text="Multiplayer" data-scale="3" data-tint="#d41000">Multiplayer</h1>
+      <p class="room">Room: <span id="lobby-room"></span></p>
       <div id="lobby-form">
-        <p><label>Name <input id="lobby-name" maxlength="16"></label></p>
-        <p>
-          <button id="lobby-join">Join room</button>
-        </p>
-        <details open><summary>Create room (host)</summary>
-          <p><label>Players <select id="lobby-max"><option>2</option><option>3</option><option selected>4</option></select></label>
-             <label>Skill <select id="lobby-skill"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
-             <label>Map E1M <select id="lobby-map"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label>
-             <label><input type="checkbox" id="lobby-dm"> Deathmatch</label></p>
-          <p><button id="lobby-create">Create room</button></p>
-        </details>
+        <label class="row">Name <input id="lobby-name" maxlength="16" autocomplete="off" spellcheck="false"></label>
+        <button id="lobby-join" class="item">Join room</button>
+        <h2 data-doomfont data-text="Host a game" data-scale="2" data-tint="#fcb000">Host a game</h2>
+        <label class="row">Players <select id="lobby-max"><option>2</option><option>3</option><option selected>4</option></select></label>
+        <label class="row">Skill
+          <select id="lobby-skill">
+            <option value="1">I'm too young to die</option>
+            <option value="2">Hey, not too rough</option>
+            <option value="3" selected>Hurt me plenty</option>
+            <option value="4">Ultra-Violence</option>
+            <option value="5">Nightmare!</option>
+          </select></label>
+        <label class="row">Map <select id="lobby-map"><option value="1">E1M1</option><option value="2">E1M2</option><option value="3">E1M3</option><option value="4">E1M4</option><option value="5">E1M5</option><option value="6">E1M6</option><option value="7">E1M7</option><option value="8">E1M8</option><option value="9">E1M9</option></select></label>
+        <label class="row check"><input type="checkbox" id="lobby-dm"> <span>Deathmatch</span></label>
+        <button id="lobby-create" class="item">Create room</button>
       </div>
       <p id="lobby-msg"></p>
       <ol id="lobby-roster"></ol>
-      <button id="lobby-start" hidden disabled>Start game</button>
+      <button id="lobby-start" class="item" hidden disabled>Start game</button>
     </div>
   </div>
 
   <div id="error" class="overlay" hidden>
-    <div class="panel">
-      <h1>DOOM build not found</h1>
+    <div class="panel doom">
+      <h1 class="logo">Build not found</h1>
       <p><code>web/dist/doom.js</code> (with <code>doom.wasm</code> and <code>doom.data</code>) is missing or failed to load.</p>
       <p>Build it:</p>
       <pre>scripts/fetch-wad.sh   # downloads doom1.wad (not committed)

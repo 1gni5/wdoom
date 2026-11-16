@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "setup": "git submodule update --init && scripts/fetch-wad.sh",
-    "build": "port/build.sh",
+    "build": "port/build.sh && node scripts/extract-assets.mjs",
     "test": "node port/smoke.mjs",
     "test:net": "node port/net-smoke.mjs",
     "test:e2e": "node port/e2e-relay.mjs",
