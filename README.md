@@ -27,7 +27,7 @@ npm start         # http://localhost:8080
 ```
 
 ## How it works
-- The platform layer is replaced: video writes the 320x200 8-bit framebuffer + palette to memory, JS paints it to a `<canvas>`; input comes from JS via `doom_key` / `doom_mouse`.
+- The platform layer is replaced: video writes the 320x200 8-bit framebuffer + palette to memory, JS paints it to a `<canvas>` (GPU-accelerated: WebGL palette lookup in `web/gl-renderer.js`; falls back to 2D canvas, or force it with `?nogl`); input comes from JS via `doom_key` / `doom_mouse`.
 - Doom's blocking `D_DoomLoop` is split into `doom_init()` and `doom_tick()`; JS calls the latter from `requestAnimationFrame`.
 - The WAD is preloaded into the Emscripten virtual filesystem (`/doom1.wad`).
 - Sound is stubbed (silent) and networking disabled.

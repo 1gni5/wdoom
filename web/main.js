@@ -3,6 +3,7 @@
 
 import { NetClient } from "./net.js";
 import { applyDoomFont } from "./doomfont.js";
+import { createGLRenderer } from "./gl-renderer.js";
 
 const WIDTH = 320;
 const HEIGHT = 200;
@@ -75,9 +76,13 @@ const statusText = $("status-text");
 const errorEl = $("error");
 const errorDetail = $("error-detail");
 const canvas = $("screen");
-const ctx = canvas.getContext("2d");
-const image = ctx.createImageData(WIDTH, HEIGHT);
-const pixels = new Uint32Array(image.data.buffer); // RGBA as little-endian uint32
+// Prefer the GPU path (WebGL palette lookup); fall back to 2D canvas.
+// Use ?nogl to force the software path.
+const gpu = new URLSearchParams(location.search).has("nogl")
+  ? null : createGLRenderer(canvas, WIDTH, HEIGHT);
+const ctx = gpu ? null : canvas.getContext("2d");
+const image = ctx && ctx.createImageData(WIDTH, HEIGHT);
+const pixels = image && new Uint32Array(image.data.buffer); // RGBA as little-endian uint32
 
 function showError(err) {
   statusEl.hidden = true;
@@ -330,6 +335,8 @@ function blitFrame(Module) {
   const heap = Module.HEAPU8; // re-read each frame: memory may have grown
   const fb = heap.subarray(fbPtr, fbPtr + FB_SIZE);
   const pal = heap.subarray(palPtr, palPtr + PAL_SIZE);
+
+  if (gpu) { gpu.draw(fb, pal); return; }
 
   // Build a 256-entry LUT of packed RGBA (little-endian: R lowest byte).
   const lut = new Uint32Array(256);
