@@ -1,0 +1,3 @@
+[submodule "third_party/DOOM"]
+	path = third_party/DOOM
+	url = https://github.com/id-Software/DOOM.git

@@ -1,0 +1,4 @@
+build/
+web/dist/
+*.wad
+node_modules/
