@@ -31,11 +31,20 @@ npm start         # http://localhost:8080
 - The WAD is preloaded into the Emscripten virtual filesystem (`/doom1.wad`).
 - Sound is stubbed (silent) and networking disabled.
 
+## Multiplayer (2-4 players, WebSocket relay)
+```sh
+npm run relay      # relay + lobby server on :8081 (also serves web/)
+```
+Open `http://<host-LAN-IP>:8081/?room=NAME` in each browser (find the IP with `ipconfig getifaddr en0`; allow Node through the macOS firewall). The first player creates the room (host, picks max players), the others join with the same URL, and the host clicks Start. Doom's lockstep netcode runs unchanged; the relay only forwards packets. See `docs/multiplayer.md`.
+
+Tests: `npm run test:net` (in-process sync), `npm run test:relay` (server), `npm run test:e2e` (real relay + 2 wasm clients).
+Known limit: a player disconnecting mid-game can stall the others.
+
 ## Controls
 Arrows move/turn, Ctrl fire, Space use, Shift run, Alt strafe, Esc menu. Click the canvas to capture the mouse.
 
 ## Notes
 - Shareware `doom1.wad` is freely distributable but is not committed (`.gitignore`); the full game WAD is not included.
 - The Doom source is under the id Software GPL license (see `third_party/DOOM/LICENSE.TXT`).
-- Known limits: no sound; input verified headless in node (menu navigation, new game, movement), not yet in a real browser.
+- Known limits: no sound; input verified headless in node (menu navigation, new game, movement), multiplayer verified between two browsers on a LAN.
 - Orchestration briefs used to build this are in `briefs/`.
