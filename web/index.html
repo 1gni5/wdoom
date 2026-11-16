@@ -20,10 +20,9 @@
     <div class="panel doom">
       <img class="doom-logo" src="dist/ui/logo.png" alt="DOOM" onerror="this.remove()">
       <h1 class="logo" data-doomfont data-text="Multiplayer" data-scale="3" data-tint="#d41000">Multiplayer</h1>
-      <p class="room">Room: <span id="lobby-room"></span></p>
       <div id="lobby-form">
         <label class="row">Name <input id="lobby-name" maxlength="16" autocomplete="off" spellcheck="false"></label>
-        <button id="lobby-join" class="item">Join room</button>
+        <label class="row">Room <input id="lobby-room-in" maxlength="32" autocomplete="off" spellcheck="false" placeholder="e.g. my-room" pattern="[A-Za-z0-9_\-]+"></label>
         <h2 data-doomfont data-text="Host a game" data-scale="2" data-tint="#fcb000">Host a game</h2>
         <label class="row">Players <select id="lobby-max"><option>2</option><option>3</option><option selected>4</option></select></label>
         <label class="row">Skill
@@ -37,6 +36,13 @@
         <label class="row">Map <select id="lobby-map"><option value="1">E1M1</option><option value="2">E1M2</option><option value="3">E1M3</option><option value="4">E1M4</option><option value="5">E1M5</option><option value="6">E1M6</option><option value="7">E1M7</option><option value="8">E1M8</option><option value="9">E1M9</option></select></label>
         <label class="row check"><input type="checkbox" id="lobby-dm"> <span>Deathmatch</span></label>
         <button id="lobby-create" class="item">Create room</button>
+        <button id="lobby-join" class="item">Join room</button>
+        <button id="lobby-solo" class="item">Play solo</button>
+      </div>
+      <p class="room" id="lobby-room-title" hidden>Room: <span id="lobby-room"></span></p>
+      <div id="lobby-share" class="share" hidden>
+        <input id="lobby-url" readonly>
+        <button id="lobby-copy" class="item">Copy link</button>
       </div>
       <p id="lobby-msg"></p>
       <ol id="lobby-roster"></ol>
@@ -59,6 +65,7 @@ port/build.sh          # produces web/dist/doom.js</pre>
 
   <div id="help" class="hint">Click game to capture mouse · Esc releases · Ctrl fire · Space use</div>
 
+  <script src="config.js"></script>
   <script type="module" src="main.js"></script>
 </body>
 </html>

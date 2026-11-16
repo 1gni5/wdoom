@@ -14,6 +14,13 @@ const webRoot = path.resolve(here, "..", "web");
 export const MAX_TEXT_BYTES = 2048; // control messages
 export const MAX_PACKET_BYTES = 512; // one game packet incl. the 1-byte header
 const MAX_PLAYERS = 4;
+const MAX_ROOMS = Number(process.env.MAX_ROOMS || 200);
+const MAX_CONN_PER_IP = Number(process.env.MAX_CONN_PER_IP || 20);
+const HEARTBEAT_MS = 30000;
+// SERVE_STATIC=0 -> API-only relay (game hosted elsewhere, e.g. a CDN/static site).
+const SERVE_STATIC = process.env.SERVE_STATIC !== "0";
+// ALLOWED_ORIGINS=https://doom.example.com,https://other.example (empty = any origin)
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
 const ROOM_RE = /^[A-Za-z0-9_-]{1,32}$/;
 const NAME_MAX = 32;
 
@@ -74,8 +81,26 @@ export function createRelay() {
   // Room: { name, max, deathmatch, skill, episode, map, started, clients: Client[] }
   // Client: { ws, room: Room|null, player: number, name: string }
 
-  const server = http.createServer(serveStatic);
-  const wss = new WebSocketServer({ server, path: "/ws", maxPayload: 4096 });
+  const server = http.createServer((req, res) => {
+    if (req.url === "/healthz") return res.writeHead(200, { "Content-Type": "text/plain" }).end("ok");
+    if (!SERVE_STATIC) return res.writeHead(404).end("Not found");
+    serveStatic(req, res);
+  });
+  const wss = new WebSocketServer({
+    server,
+    path: "/ws",
+    maxPayload: 4096,
+    verifyClient: ({ origin, req }) => {
+      if (ALLOWED_ORIGINS.length && !ALLOWED_ORIGINS.includes(origin)) return false;
+      const ip = clientIp(req);
+      let n = 0;
+      for (const c of wss.clients) if (c.ip === ip) n++;
+      return n < MAX_CONN_PER_IP;
+    },
+  });
+  // Behind Container Apps ingress the real client is the first X-Forwarded-For entry.
+  const clientIp = (req) =>
+    String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
 
   const send = (ws, obj) => {
     if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
@@ -129,6 +154,7 @@ export function createRelay() {
     let room = rooms.get(msg.room);
     if (msg.type === "create") {
       if (room) return send(ws, { type: "error", message: "room exists" }), ws.close();
+      if (rooms.size >= MAX_ROOMS) return send(ws, { type: "error", message: "server busy" }), ws.close();
       room = {
         name: msg.room,
         max: int(msg.max, 2, MAX_PLAYERS, MAX_PLAYERS),
@@ -187,7 +213,21 @@ export function createRelay() {
     if (target && target.ws.readyState === target.ws.OPEN) target.ws.send(out);
   }
 
-  wss.on("connection", (ws) => {
+  // Drop dead connections (idle NAT/ingress timeouts) so rooms don't leak.
+  const heartbeat = setInterval(() => {
+    for (const ws of wss.clients) {
+      if (ws.alive === false) { ws.terminate(); continue; }
+      ws.alive = false;
+      ws.ping();
+    }
+  }, HEARTBEAT_MS);
+  heartbeat.unref();
+  wss.on("close", () => clearInterval(heartbeat));
+
+  wss.on("connection", (ws, req) => {
+    ws.ip = clientIp(req);
+    ws.alive = true;
+    ws.on("pong", () => { ws.alive = true; });
     let joined = false;
     ws.on("message", (data, isBinary) => {
       if (isBinary) {
@@ -238,7 +278,7 @@ export function createRelay() {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.argv[2] || process.env.PORT || 8081);
   const { server } = createRelay();
-  server.listen(port, () => {
+  server.listen(port, "0.0.0.0", () => {
     console.log(`Relay + static web at http://localhost:${port}  (ws path /ws)`);
     console.log(`Multiplayer lobby: http://localhost:${port}/?room=NAME`);
   });

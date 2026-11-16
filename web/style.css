@@ -243,3 +243,7 @@ body.playing .hint { opacity: 0; }
 }
 .logo.doomfont, .panel h2.doomfont { display: flex; justify-content: center; background: none; -webkit-background-clip: initial; background-clip: initial; filter: none; border: 0; }
 .panel h2.doomfont { border-bottom: 2px solid var(--blood); padding-bottom: .4rem; justify-content: flex-start; }
+
+.share { display: flex; gap: .5rem; align-items: stretch; margin: .4rem 0; }
+.share input { flex: 1; min-width: 0; }
+.share .item { width: auto; white-space: nowrap; }

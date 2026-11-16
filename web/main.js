@@ -204,26 +204,57 @@ function installInput() {
 
 // Multiplayer lobby ------------------------------------------------------
 
-// Resolves with the NetClient once the game has started (config applied).
+// Resolves with the NetClient once the game has started (config applied),
+// or null if the player chose to play solo.
+// ?room=NAME auto-joins that room; otherwise the player can host (type a
+// room name, then share the link) or join by name.
 function runLobby(Module, params) {
-  const room = params.get("room");
+  const urlRoom = params.get("room");
   const lobby = $("lobby");
   const rosterEl = $("lobby-roster");
   const msgEl = $("lobby-msg");
   const startBtn = $("lobby-start");
-  $("lobby-room").textContent = room;
+  const formEl = $("lobby-form");
+  const roomIn = $("lobby-room-in");
   const nameIn = $("lobby-name");
+  const shareEl = $("lobby-share");
   nameIn.value = localStorage.getItem("doomName") || "Player" + ((Math.random() * 900 + 100) | 0);
+  roomIn.value = urlRoom || "";
   lobby.hidden = false;
   statusEl.hidden = true;
 
+  const roomLink = (room) => {
+    const u = new URL(location.href);
+    u.search = "";
+    u.searchParams.set("room", room);
+    if (params.get("server")) u.searchParams.set("server", params.get("server"));
+    return u.href;
+  };
+
   return new Promise((resolve) => {
+    let room = "";
+    let lastError = "";
+    const showForm = () => {
+      formEl.hidden = false;
+      shareEl.hidden = true;
+      $("lobby-room-title").hidden = true;
+      startBtn.hidden = true;
+      rosterEl.replaceChildren();
+    };
     const net = new NetClient({
       url: params.get("server") || undefined,
       onJoined: (m) => {
-        msgEl.textContent = `Joined as player ${m.player + 1} (${m.numplayers}/${m.max ?? "?"})`;
+        msgEl.textContent = m.player === 0
+          ? `Room created (${m.numplayers}/${m.max ?? "?"}). Send the link to your friends!`
+          : `Joined as player ${m.player + 1} (${m.numplayers}/${m.max ?? "?"})`;
         startBtn.hidden = m.player !== 0;
-        $("lobby-form").hidden = true;
+        formEl.hidden = true;
+        $("lobby-room").textContent = room;
+        $("lobby-room-title").hidden = false;
+        $("lobby-url").value = roomLink(room);
+        shareEl.hidden = false;
+        history.replaceState(null, "", roomLink(room));
+        copyLink(); // best effort; the button is there if the browser refuses
       },
       onRoster: (names) => {
         rosterEl.replaceChildren(...names.map((n, i) => {
@@ -242,11 +273,34 @@ function runLobby(Module, params) {
         resolve(net);
       },
       onLeft: (p) => setStatus(`Player ${p + 1} left`),
-      onError: (e) => { msgEl.textContent = e.message; },
-      onClose: () => { if (!net.started) msgEl.textContent = "Disconnected from relay."; },
+      onError: (e) => { lastError = e.message; msgEl.textContent = e.message; },
+      onClose: () => {
+        if (net.started) return;
+        if (!lastError) msgEl.textContent = "Disconnected from relay.";
+        showForm();
+      },
     });
+
+    async function copyLink() {
+      const url = $("lobby-url").value;
+      try {
+        await navigator.clipboard.writeText(url);
+        $("lobby-copy").textContent = "Copied!";
+      } catch {
+        $("lobby-url").select();
+        $("lobby-copy").textContent = "Copy link";
+      }
+    }
+    $("lobby-copy").onclick = copyLink;
+    $("lobby-url").onclick = (e) => e.target.select();
+
     startBtn.onclick = () => net.start();
     const go = async (create) => {
+      room = roomIn.value.trim();
+      if (!/^[A-Za-z0-9_-]{1,32}$/.test(room)) {
+        msgEl.textContent = "Room name: letters, digits, - and _ (max 32)";
+        return;
+      }
       const name = nameIn.value.trim() || "Player";
       localStorage.setItem("doomName", name);
       const first = create
@@ -254,12 +308,17 @@ function runLobby(Module, params) {
             deathmatch: $("lobby-dm").checked, skill: Number($("lobby-skill").value),
             episode: 1, map: Number($("lobby-map").value) }
         : { type: "join", room, name };
+      lastError = "";
       msgEl.textContent = "Connecting…";
       try { await net.connect(first); msgEl.textContent = "Waiting for relay…"; }
-      catch (e) { msgEl.textContent = e.message; }
+      catch (e) { msgEl.textContent = e.message; showForm(); }
     };
     $("lobby-create").onclick = () => go(true);
     $("lobby-join").onclick = () => go(false);
+    $("lobby-solo").onclick = () => { lobby.hidden = true; resolve(null); };
+    roomIn.addEventListener("keydown", (e) => { if (e.key === "Enter") go(false); });
+
+    if (urlRoom) go(false); // room in the URL: join straight away
   });
 }
 
@@ -306,7 +365,7 @@ async function main() {
     return;
   }
   statusEl.hidden = true;
-  if (params.has("room") && !useMock) {
+  if (!useMock) {
     await runLobby(Module, params); // calls doom_net_config on start
   }
   wasm.init();

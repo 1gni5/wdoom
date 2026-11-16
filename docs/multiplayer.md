@@ -31,3 +31,23 @@ to/from player indices. Two patches (`port/patches/d_net.patch`, web only):
 **Test:** `npm run test:net` (`PLAYERS=2..4 TICS=400 DROP=0.2` optional) runs
 N wasm instances over in-process queues and compares `doom_net_checksum` at
 each common gametic.
+
+## Public deployment (container)
+
+`Dockerfile` packages the relay. Run `npm run build` first (it bundles `web/`,
+including `web/dist`). The browser connects to `wss://<same host>/ws` by default.
+
+    docker build -t web-doom .
+    docker run -p 8081:8081 web-doom          # game + relay on one origin
+
+Azure Container Apps: enable external ingress, target port 8081 (WebSocket works
+out of the box). Keep **one replica** (min = max = 1): rooms live in memory, so
+players of a room must hit the same instance. Health probe: `GET /healthz`.
+
+Env vars: `PORT` (8081), `SERVE_STATIC=0` (relay only), `ALLOWED_ORIGINS`
+(comma-separated, restricts WebSocket origins), `MAX_ROOMS` (200),
+`MAX_CONN_PER_IP` (20).
+
+Split hosting (game on a static site/CDN, relay in the container): run with
+`SERVE_STATIC=0 ALLOWED_ORIGINS=https://your.site` and set `relayUrl` in
+`web/config.js` to `wss://<container-app-fqdn>/ws`.

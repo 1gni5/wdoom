@@ -14,10 +14,15 @@ export class NetClient {
     this.fns = null;
   }
 
-  // Default relay URL: same host, port 8081.
+  // Relay URL precedence: ?server= (handled by caller) > config.js relayUrl >
+  // same origin /ws (relay serves the page, or a reverse proxy/ingress routes /ws).
+  // Local dev static server (port 8080) falls back to the relay on :8081.
   static defaultUrl(loc = globalThis.location) {
+    const cfg = globalThis.DOOM_CONFIG?.relayUrl;
+    if (cfg) return cfg;
     const proto = loc.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${loc.hostname}:8081/ws`;
+    if (loc.port === "8080") return `${proto}//${loc.hostname}:8081/ws`;
+    return `${proto}//${loc.host}/ws`;
   }
 
   connect(first) {
