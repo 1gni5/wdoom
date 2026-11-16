@@ -6,6 +6,11 @@
     "setup": "git submodule update --init && scripts/fetch-wad.sh",
     "build": "port/build.sh",
     "test": "node port/smoke.mjs",
-    "start": "node scripts/serve.mjs"
+    "start": "node scripts/serve.mjs",
+    "relay": "node server/relay.mjs",
+    "test:relay": "node --test server/relay.test.mjs"
+  },
+  "dependencies": {
+    "ws": "8.22.2"
   }
 }
