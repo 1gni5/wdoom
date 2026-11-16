@@ -51,3 +51,11 @@ Env vars: `PORT` (8081), `SERVE_STATIC=0` (relay only), `ALLOWED_ORIGINS`
 Split hosting (game on a static site/CDN, relay in the container): run with
 `SERVE_STATIC=0 ALLOWED_ORIGINS=https://your.site` and set `relayUrl` in
 `web/config.js` to `wss://<container-app-fqdn>/ws`.
+
+### Releases
+
+Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`: it builds the wasm,
+runs the tests, then publishes a GitHub release with `web-doom-web-*.tar.gz`
+(static game), `web-doom-relay-*.tar.gz` (relay only) and `SHA256SUMS`, and pushes
+the image `ghcr.io/1gni5/wdoom:<version>` / `:latest`. `ci.yml` runs build + tests
+on every push to `main` and on pull requests.
