@@ -1,0 +1,18 @@
+--- a/p_inter.c	2026-11-16 15:15:20.328423100 +0100
++++ b/p_inter.c	2026-11-16 15:15:20.619915900 +0100
+@@ -790,6 +790,15 @@
+     if (target->health <= 0)
+ 	return;
+ 
++#ifdef DOOM_WEB
++    // Web build: co-op (netgame without deathmatch) has no friendly fire.
++    // Players still hurt themselves (e.g. own rocket splash).
++    if (netgame && !deathmatch
++	&& target->player && source && source->player
++	&& source != target)
++	return;
++#endif
++
+     if ( target->flags & MF_SKULLFLY )
+     {
+ 	target->momx = target->momy = target->momz = 0;
