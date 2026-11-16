@@ -1,0 +1,113 @@
+--- a/d_main.c
++++ b/d_main.c
+@@ -220,7 +220,12 @@
+     }
+ 
+     // save the current screen if about to wipe
++#ifdef DOOM_WEB
++    // Web build: no melt wipe (it would block the browser's main thread).
++    if (0)
++#else
+     if (gamestate != wipegamestate)
++#endif
+     {
+ 	wipe = true;
+ 	wipe_StartScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
+@@ -350,6 +355,46 @@
+ //  D_DoomLoop
+ //
+ extern  boolean         demorecording;
++
++// Web build: one iteration of the game loop, called from doom_tick().
++void D_DoomLoopTick (void)
++{
++    // frame syncronous IO operations
++    I_StartFrame ();
++
++    // process one or more tics
++    if (singletics)
++    {
++	I_StartTic ();
++	D_ProcessEvents ();
++	G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
++	if (advancedemo)
++	    D_DoAdvanceDemo ();
++	M_Ticker ();
++	G_Ticker ();
++	gametic++;
++	maketic++;
++    }
++    else
++    {
++	TryRunTics (); // will run at least one tic
++    }
++
++    S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
++
++    // Update display, next frame, with current state.
++    D_Display ();
++
++#ifndef SNDSERV
++    // Sound mixing for the buffer is snychronous.
++    I_UpdateSound();
++#endif
++    // Synchronous sound output is explicitly called.
++#ifndef SNDINTR
++    // Update sound output.
++    I_SubmitSound();
++#endif
++}
+ 
+ void D_DoomLoop (void)
+ {
+@@ -366,44 +411,13 @@
+ 	
+     I_InitGraphics ();
+ 
++#ifdef DOOM_WEB
++    // Web build: return to the caller; doom_tick() drives D_DoomLoopTick().
++    return;
++#endif
++
+     while (1)
+-    {
+-	// frame syncronous IO operations
+-	I_StartFrame ();                
+-	
+-	// process one or more tics
+-	if (singletics)
+-	{
+-	    I_StartTic ();
+-	    D_ProcessEvents ();
+-	    G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
+-	    if (advancedemo)
+-		D_DoAdvanceDemo ();
+-	    M_Ticker ();
+-	    G_Ticker ();
+-	    gametic++;
+-	    maketic++;
+-	}
+-	else
+-	{
+-	    TryRunTics (); // will run at least one tic
+-	}
+-		
+-	S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
+-
+-	// Update display, next frame, with current state.
+-	D_Display ();
+-
+-#ifndef SNDSERV
+-	// Sound mixing for the buffer is snychronous.
+-	I_UpdateSound();
+-#endif	
+-	// Synchronous sound output is explicitly called.
+-#ifndef SNDINTR
+-	// Update sound output.
+-	I_SubmitSound();
+-#endif
+-    }
++	D_DoomLoopTick ();
+ }
+ 
+ 

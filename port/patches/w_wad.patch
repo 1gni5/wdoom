@@ -1,0 +1,20 @@
+--- a/w_wad.c
++++ b/w_wad.c
+@@ -66,7 +66,7 @@
+ 
+ #define strcmpi	strcasecmp
+ 
+-void strupr (char* s)
++void doom_strupr (char* s)
+ {
+     while (*s) { *s = toupper(*s); s++; }
+ }
+@@ -367,7 +367,7 @@
+     name8.s[8] = 0;
+ 
+     // case insensitive
+-    strupr (name8.s);		
++    doom_strupr (name8.s);		
+ 
+     v1 = name8.x[0];
+     v2 = name8.x[1];
