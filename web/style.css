@@ -1,17 +1,23 @@
+:root {
+  --blood: #b00000;
+  --fire: #ff7b00;
+  --gold: #fcb000;
+  --metal: #1a1410;
+  --rivet: #4a3b2c;
+  --text: #c8b8a0;
+  --mono: "Courier New", Courier, ui-monospace, monospace;
+}
+
 html, body {
   margin: 0;
   height: 100%;
   background: #000;
-  color: #ddd;
-  font-family: system-ui, sans-serif;
+  color: var(--text);
+  font-family: var(--mono);
   overflow: hidden;
 }
 
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+body { display: flex; align-items: center; justify-content: center; }
 
 #stage {
   /* 4:3 letterboxed fit, Doom's intended display aspect */
@@ -30,70 +36,200 @@ canvas#screen {
   outline: none;
 }
 
+/* Overlays: dark, with a blood-red vignette */
 .overlay {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.85);
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(150, 0, 0, 0.55), transparent 65%),
+    rgba(0, 0, 0, 0.9);
   z-index: 10;
+  overflow-y: auto;
 }
-
-.overlay[hidden] {
-  display: none;
-}
+.overlay[hidden] { display: none; }
 
 #status-text {
-  font-size: 1.2rem;
-  letter-spacing: 0.05em;
-}
-
-.panel {
-  max-width: 40rem;
-  margin: 1rem;
-  padding: 1.5rem 2rem;
-  border: 1px solid #a22;
-  border-radius: 6px;
-  background: #111;
-  line-height: 1.5;
-}
-
-.panel h1 {
-  margin-top: 0;
-  color: #f55;
   font-size: 1.4rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--blood);
+  text-shadow: 2px 2px 0 #000;
+  animation: blink 1.2s steps(2, start) infinite;
 }
+@keyframes blink { 50% { opacity: 0.35; } }
+
+/* Riveted metal panel, like Doom's menu/status bar */
+.panel {
+  box-sizing: border-box;
+  width: min(34rem, calc(100vw - 2rem));
+  margin: 1rem;
+  padding: 1.25rem 2rem 1.5rem;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px),
+    linear-gradient(#2a211a, #15100c);
+  border: 4px solid;
+  border-color: #6b5844 #1a130d #1a130d #6b5844; /* beveled */
+  box-shadow: 0 0 0 3px #000, 0 0 40px rgba(176, 0, 0, 0.5), inset 0 0 30px rgba(0,0,0,.7);
+  line-height: 1.4;
+  position: relative;
+}
+.panel::before, .panel::after { /* rivets */
+  content: "";
+  position: absolute;
+  top: 8px;
+  width: 8px; height: 8px;
+  background: radial-gradient(circle at 30% 30%, #a08a6c, var(--rivet) 60%, #000);
+  border-radius: 50%;
+}
+.panel::before { left: 8px; }
+.panel::after { right: 8px; }
+
+/* Title in the DOOM logo spirit: heavy, red-to-orange, hard shadow */
+.logo {
+  margin: 0 0 .25rem;
+  text-align: center;
+  font-family: Impact, "Arial Black", var(--mono);
+  font-weight: 900;
+  font-size: 2.4rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: linear-gradient(#ffd84a 0%, var(--fire) 45%, var(--blood) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(3px 3px 0 #000) drop-shadow(0 0 8px rgba(255, 60, 0, .45));
+}
+
+.panel h2 {
+  margin: 1rem 0 .4rem;
+  font-size: .95rem;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  color: var(--gold);
+  border-bottom: 2px solid var(--blood);
+  padding-bottom: .2rem;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.room { text-align: center; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: .15em; }
+.room span { color: var(--gold); }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: .45rem 0;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: .9rem;
+  color: var(--gold);
+}
+.row.check { justify-content: flex-start; cursor: pointer; }
+
+input[type=text], input:not([type]), select {
+  font: inherit;
+  color: #ffd9a0;
+  background: #0b0705;
+  border: 2px solid;
+  border-color: #000 #5a4a3a #5a4a3a #000; /* inset */
+  padding: .3rem .5rem;
+  min-width: 13rem;
+  text-transform: none;
+  outline: none;
+}
+input:focus, select:focus { border-color: #000 var(--fire) var(--fire) #000; }
+input[type=checkbox] {
+  appearance: none;
+  width: 1.1rem; height: 1.1rem; min-width: 0;
+  padding: 0;
+  cursor: pointer;
+  background: #0b0705;
+  border: 2px solid;
+  border-color: #000 #5a4a3a #5a4a3a #000;
+}
+input[type=checkbox]:checked { background: var(--blood); box-shadow: inset 0 0 0 3px #0b0705; }
+
+/* Menu items with the Doom skull cursor */
+button.item {
+  display: block;
+  position: relative;
+  width: 100%;
+  margin: .9rem 0 .2rem;
+  padding: .5rem 1rem .5rem 3rem;
+  font: inherit;
+  font-weight: bold;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  text-align: left;
+  color: #d41000;
+  background: transparent;
+  border: 0;
+  text-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+}
+button.item:hover, button.item:focus-visible {
+  color: #ff2a00;
+  outline: none;
+}
+button.item:hover::before, button.item:focus-visible::before {
+  content: "";
+  position: absolute;
+  left: .6rem; top: 50%;
+  width: 24px; height: 24px;
+  margin-top: -12px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><path fill='%23e8d8b8' d='M2 0h4v1h1v3h-1v1h-1v1h-2v-1h-1v-1h-1v-3h1z'/><path fill='%23000' d='M2 2h1v2h-1zM5 2h1v2h-1zM3.5 4.5h1v1h-1z'/><path fill='%23e8d8b8' d='M2 7h1v1h-1zM5 7h1v1h-1z'/></svg>") center/contain no-repeat;
+  image-rendering: pixelated;
+  animation: skull .5s steps(2) infinite;
+}
+@keyframes skull { 50% { transform: translateY(-2px); } }
+button.item:disabled { color: #4a3a30; cursor: not-allowed; }
+button.item:disabled::before { display: none; }
+
+#lobby-msg { min-height: 1.4em; margin: .8rem 0 .2rem; color: var(--gold); text-align: center; text-transform: uppercase; letter-spacing: .08em; font-size: .85rem; }
+
+/* Roster as player slots with Doom's player colours */
+#lobby-roster { list-style: none; padding: 0; margin: .4rem 0; }
+#lobby-roster li {
+  margin: .25rem 0;
+  padding: .3rem .6rem;
+  background: #0b0705;
+  border-left: 8px solid #3a3;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #ffd9a0;
+}
+#lobby-roster li:nth-child(2) { border-color: #888; }
+#lobby-roster li:nth-child(3) { border-color: #a63; }
+#lobby-roster li:nth-child(4) { border-color: #c22; }
 
 .panel pre {
   background: #000;
-  padding: 0.75rem 1rem;
+  color: #7f7;
+  padding: .7rem 1rem;
   overflow-x: auto;
-  border-radius: 4px;
+  border: 2px solid #000;
+  box-shadow: inset 0 0 0 1px #3a3a3a;
 }
+.panel code { color: var(--gold); }
+.panel p { margin: .5rem 0; }
 
-.panel code {
-  color: #fc6;
-}
-
-.detail {
-  color: #888;
-  font-size: 0.85rem;
-  word-break: break-word;
-}
+.detail { color: #7a6a58; font-size: .8rem; word-break: break-word; }
 
 .hint {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0.5rem;
+  left: 0; right: 0; bottom: .5rem;
   text-align: center;
-  font-size: 0.8rem;
-  color: #666;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: #6b5844;
   pointer-events: none;
-  transition: opacity 0.5s;
+  transition: opacity .5s;
 }
-
-body.playing .hint {
-  opacity: 0;
-}
+body.playing .hint { opacity: 0; }
