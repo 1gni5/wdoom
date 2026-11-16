@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOOM (WebAssembly)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage">
+    <canvas id="screen" width="320" height="200" tabindex="0"></canvas>
+  </div>
+
+  <div id="status" class="overlay">
+    <div id="status-text">Loading DOOM…</div>
+  </div>
+
+  <div id="error" class="overlay" hidden>
+    <div class="panel">
+      <h1>DOOM build not found</h1>
+      <p><code>web/dist/doom.js</code> (with <code>doom.wasm</code> and <code>doom.data</code>) is missing or failed to load.</p>
+      <p>Build it:</p>
+      <pre>scripts/fetch-wad.sh   # downloads doom1.wad (not committed)
+port/build.sh          # produces web/dist/doom.js</pre>
+      <p>Then start the dev server and reload:</p>
+      <pre>node scripts/serve.mjs   # http://localhost:8080</pre>
+      <p id="error-detail" class="detail"></p>
+    </div>
+  </div>
+
+  <div id="help" class="hint">Click game to capture mouse · Esc releases · Ctrl fire · Space use</div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: #ddd;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#stage {
+  /* 4:3 letterboxed fit, Doom's intended display aspect */
+  width: min(100vw, calc(100vh * 4 / 3));
+  aspect-ratio: 4 / 3;
+}
+
+canvas#screen {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  cursor: pointer;
+  outline: none;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10;
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+#status-text {
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+}
+
+.panel {
+  max-width: 40rem;
+  margin: 1rem;
+  padding: 1.5rem 2rem;
+  border: 1px solid #a22;
+  border-radius: 6px;
+  background: #111;
+  line-height: 1.5;
+}
+
+.panel h1 {
+  margin-top: 0;
+  color: #f55;
+  font-size: 1.4rem;
+}
+
+.panel pre {
+  background: #000;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  border-radius: 4px;
+}
+
+.panel code {
+  color: #fc6;
+}
+
+.detail {
+  color: #888;
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
+.hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #666;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+
+body.playing .hint {
+  opacity: 0;
+}
