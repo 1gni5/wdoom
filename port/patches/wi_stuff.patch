@@ -1,0 +1,14 @@
+--- a/wi_stuff.c	2026-11-16 15:55:57.507299300 +0100
++++ b/wi_stuff.c	2026-11-16 15:55:57.661109500 +0100
+@@ -1652,7 +1652,10 @@
+     sp_secret = W_CacheLumpName("WISCRT2", PU_STATIC);
+ 
+     // Yuck. 
+-    if (french)
++    // Web build: 'french' is an enum constant (always true), so the original
++    // test loaded WIOBJ, which only exists in the French release -> crash on
++    // the co-op stats screen. Test the language variable instead.
++    if (language == french)
+     {
+ 	// "items"
+ 	if (netgame && !deathmatch)
