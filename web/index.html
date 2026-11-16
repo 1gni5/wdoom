@@ -16,6 +16,28 @@
     <div id="status-text">Loading DOOM…</div>
   </div>
 
+  <div id="lobby" class="overlay" hidden>
+    <div class="panel">
+      <h1>Multiplayer: <span id="lobby-room"></span></h1>
+      <div id="lobby-form">
+        <p><label>Name <input id="lobby-name" maxlength="16"></label></p>
+        <p>
+          <button id="lobby-join">Join room</button>
+        </p>
+        <details open><summary>Create room (host)</summary>
+          <p><label>Players <select id="lobby-max"><option>2</option><option>3</option><option selected>4</option></select></label>
+             <label>Skill <select id="lobby-skill"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
+             <label>Map E1M <select id="lobby-map"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label>
+             <label><input type="checkbox" id="lobby-dm"> Deathmatch</label></p>
+          <p><button id="lobby-create">Create room</button></p>
+        </details>
+      </div>
+      <p id="lobby-msg"></p>
+      <ol id="lobby-roster"></ol>
+      <button id="lobby-start" hidden disabled>Start game</button>
+    </div>
+  </div>
+
   <div id="error" class="overlay" hidden>
     <div class="panel">
       <h1>DOOM build not found</h1>

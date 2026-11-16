@@ -1,6 +1,8 @@
 // DOOM web front-end. Talks to the wasm build via the contract in CONTRACT.md.
 // Load order: ?mock=1 uses ./mock-doom.js, otherwise ./dist/doom.js.
 
+import { NetClient } from "./net.js";
+
 const WIDTH = 320;
 const HEIGHT = 200;
 const FB_SIZE = WIDTH * HEIGHT;
@@ -199,6 +201,67 @@ function installInput() {
   canvas.focus();
 }
 
+// Multiplayer lobby ------------------------------------------------------
+
+// Resolves with the NetClient once the game has started (config applied).
+function runLobby(Module, params) {
+  const room = params.get("room");
+  const lobby = $("lobby");
+  const rosterEl = $("lobby-roster");
+  const msgEl = $("lobby-msg");
+  const startBtn = $("lobby-start");
+  $("lobby-room").textContent = room;
+  const nameIn = $("lobby-name");
+  nameIn.value = localStorage.getItem("doomName") || "Player" + ((Math.random() * 900 + 100) | 0);
+  lobby.hidden = false;
+  statusEl.hidden = true;
+
+  return new Promise((resolve) => {
+    const net = new NetClient({
+      url: params.get("server") || undefined,
+      onJoined: (m) => {
+        msgEl.textContent = `Joined as player ${m.player + 1} (${m.numplayers}/${m.max ?? "?"})`;
+        startBtn.hidden = m.player !== 0;
+        $("lobby-form").hidden = true;
+      },
+      onRoster: (names) => {
+        rosterEl.replaceChildren(...names.map((n, i) => {
+          const li = document.createElement("li");
+          li.textContent = `${i + 1}. ${n}${i === net.player ? " (you)" : ""}`;
+          return li;
+        }));
+        startBtn.disabled = names.length < 2;
+      },
+      onStart: (m) => {
+        net.attach(Module);
+        Module.ccall("doom_net_config", null, Array(6).fill("number"),
+          [m.numplayers, m.player, m.deathmatch ? (m.deathmatch === true ? 1 : m.deathmatch) : 0,
+           m.skill || 3, m.episode || 1, m.map || 1]);
+        lobby.hidden = true;
+        resolve(net);
+      },
+      onLeft: (p) => setStatus(`Player ${p + 1} left`),
+      onError: (e) => { msgEl.textContent = e.message; },
+      onClose: () => { if (!net.started) msgEl.textContent = "Disconnected from relay."; },
+    });
+    startBtn.onclick = () => net.start();
+    const go = async (create) => {
+      const name = nameIn.value.trim() || "Player";
+      localStorage.setItem("doomName", name);
+      const first = create
+        ? { type: "create", room, name, max: Number($("lobby-max").value),
+            deathmatch: $("lobby-dm").checked, skill: Number($("lobby-skill").value),
+            episode: 1, map: Number($("lobby-map").value) }
+        : { type: "join", room, name };
+      msgEl.textContent = "Connecting…";
+      try { await net.connect(first); msgEl.textContent = "Waiting for relay…"; }
+      catch (e) { msgEl.textContent = e.message; }
+    };
+    $("lobby-create").onclick = () => go(true);
+    $("lobby-join").onclick = () => go(false);
+  });
+}
+
 // Rendering loop ---------------------------------------------------------
 
 function blitFrame(Module) {
@@ -230,7 +293,8 @@ function startLoop(Module) {
 // Boot -------------------------------------------------------------------
 
 async function main() {
-  const useMock = new URLSearchParams(location.search).has("mock");
+  const params = new URLSearchParams(location.search);
+  const useMock = params.has("mock");
   setStatus(useMock ? "Loading DOOM (mock)…" : "Loading DOOM…");
   let Module;
   try {
@@ -241,6 +305,9 @@ async function main() {
     return;
   }
   statusEl.hidden = true;
+  if (params.has("room") && !useMock) {
+    await runLobby(Module, params); // calls doom_net_config on start
+  }
   wasm.init();
   installInput();
   startLoop(Module);
